@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surgical Case Log</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png">
+<meta name="theme-color" content="#1d1d1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Case Log">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --text: #1d1d1f;
+    --muted: #86868b;
+    --border: #e5e5ea;
+    --cardiac: #c0392b;
+    --thoracic: #1d6f42;
+    --vascular: #1d5fa8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    padding: 48px 16px;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 26px;
+    margin: 0 0 6px;
+    text-align: center;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 40px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+  .specialty-card {
+    display: block;
+    background: var(--card);
+    border-radius: 18px;
+    padding: 32px 24px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .specialty-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(0,0,0,0.12);
+  }
+  .icon-wrap {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-wrap svg {
+    width: 38px;
+    height: 38px;
+  }
+  .specialty-card.cardiac .icon-wrap { background: #fbeaea; }
+  .specialty-card.thoracic .icon-wrap { background: #e7f3ec; }
+  .specialty-card.vascular .icon-wrap { background: #e7effa; }
+  .specialty-name {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .specialty-desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .case-count {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .cardiac .case-count { color: var(--cardiac); }
+  .thoracic .case-count { color: var(--thoracic); }
+  .vascular .case-count { color: var(--vascular); }
+  .case-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Surgical Case Log</h1>
+  <div class="subtitle">Choose a specialty to view and log cases</div>
+
+  <div class="grid">
+    <a class="specialty-card cardiac" href="cardiac-surgery.html">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            stroke="#c0392b" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="specialty-name">Cardiac Surgery</div>
+      <div class="specialty-desc">Coronary, valve &amp; aortic procedures</div>
+      <div class="case-count" id="cardiacCount">0</div>
+      <div class="case-label">Cases Logged</div>
+    </a>
+
+    <a class="specialty-card thoracic" href="thoracic-surgery.html">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3v6" stroke="#1d6f42" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M12 9c-1 0-1.8.8-2.4 1.8-.8 1.3-1.1 3-1.1 4.7 0 2.5-1.3 4.5-3.3 4.5C3 20 2 18 2 15.5 2 11 4 6 7 6c1.6 0 2.4.9 3 1.8"
+            stroke="#1d6f42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 9c1 0 1.8.8 2.4 1.8.8 1.3 1.1 3 1.1 4.7 0 2.5 1.3 4.5 3.3 4.5 2.2 0 3.2-2 3.2-4.5 0-4.5-2-9.5-5-9.5-1.6 0-2.4.9-3 1.8"
+            stroke="#1d6f42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="specialty-name">Thoracic Surgery</div>
+      <div class="specialty-desc">Lung, esophageal &amp; mediastinal cases</div>
+      <div class="case-count" id="thoracicCount">0</div>
+      <div class="case-label">Cases Logged</div>
+    </a>
+
+    <a class="specialty-card vascular" href="vascular-surgery.html">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2v7" stroke="#1d5fa8" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M12 9c0 0-3.5 1-5 5M12 9c0 0 1 2 1 5" stroke="#1d5fa8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13 14c0 0-2.5 2-3 6M13 14v6M13 14c0 0 2.5 2 3 6" stroke="#1d5fa8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="specialty-name">Vascular Surgery</div>
+      <div class="specialty-desc">Aortic, carotid &amp; peripheral procedures</div>
+      <div class="case-count" id="vascularCount">0</div>
+      <div class="case-label">Cases Logged</div>
+    </a>
+  </div>
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+<script src="auth.js"></script>
+<script>
+  CaseLogAuth.protect(async function (authKey, displayName, accountKey) {
+    async function countCases(base) {
+      const data = await CaseLogAuth.decryptJSON(authKey, localStorage.getItem(`${base}::${accountKey}`));
+      return Array.isArray(data) ? data.length : 0;
+    }
+
+    document.getElementById('cardiacCount').textContent = await countCases('cardiacCases_enc');
+    document.getElementById('thoracicCount').textContent = await countCases('thoracicCases_enc');
+    document.getElementById('vascularCount').textContent = await countCases('vascularCases_enc');
+  });
+</script>
+</body>
+</html>

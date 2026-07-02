@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thoracic Surgery Case Log</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png">
+<meta name="theme-color" content="#1d6f42">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Thoracic Log">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --text: #1d1d1f;
+    --accent: #1d6f42;
+    --accent-dark: #175a35;
+    --muted: #86868b;
+    --border: #e5e5ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    padding: 32px 16px;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+    text-align: center;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .nav-links a {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+  }
+  .nav-links a.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stat {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px 18px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    min-width: 90px;
+  }
+  .stat .num { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin: 0 0 16px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field.full { grid-column: 1 / -1; }
+  label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  input, select, textarea {
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    background: transparent;
+    color: inherit;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 44px; }
+  .procedure-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .procedure-category-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .procedure-options label {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 5px;
+    cursor: pointer;
+  }
+  .procedure-options label.procedure-bold {
+    font-weight: 700;
+  }
+  .procedure-options input[type="checkbox"] {
+    width: auto;
+    margin-top: 2px;
+  }
+  .procedure-other-input {
+    margin-top: 6px;
+    width: 100%;
+  }
+  .field-error {
+    color: var(--accent);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { background: var(--accent-dark); }
+  button.secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  button.secondary:hover { background: var(--bg); color: var(--text); }
+
+  .filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .filter-row input, .filter-row select { flex: 1; min-width: 140px; }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 1100px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+  tr:last-child td { border-bottom: none; }
+  td.notes { color: var(--muted); max-width: 220px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #e7f3ec;
+    color: var(--accent-dark);
+  }
+  .row-actions button {
+    padding: 4px 8px;
+    font-size: 12px;
+    background: none;
+    color: var(--muted);
+  }
+  .row-actions button:hover { color: var(--accent); }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 24px 0;
+  }
+  .stat-blocks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .stat-block {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .stat-block h3 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .stat-block-empty {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .dist-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .dist-label {
+    flex: 0 0 auto;
+    max-width: 55%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dist-bar-wrap {
+    flex: 1;
+    background: var(--bg);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .dist-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+  }
+  .dist-count {
+    flex: 0 0 auto;
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 18px;
+    text-align: right;
+  }
+  .time-stat-row {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .time-stat-row strong {
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Thoracic Surgery Case Log</h1>
+  <div class="subtitle">Track surgical cases: procedure, role, ventilation &amp; outcomes</div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="cardiac-surgery.html">Cardiac</a>
+    <a href="thoracic-surgery.html" class="active">Thoracic</a>
+    <a href="vascular-surgery.html">Vascular</a>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="card">
+    <h2>New Case Entry</h2>
+    <form id="form">
+      <div class="field">
+        <label for="date">Date</label>
+        <input type="date" id="date" required>
+      </div>
+      <div class="field">
+        <label for="urgency">Urgency</label>
+        <select id="urgency" required>
+          <option value="">Select...</option>
+          <option>Emergent</option>
+          <option>Urgent</option>
+          <option>Elective</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="diagnosis">Diagnosis</label>
+        <select id="diagnosis"></select>
+        <input type="text" id="diagnosisOtherText" class="procedure-other-input" placeholder="Describe diagnosis..." style="display:none;">
+      </div>
+      <div class="field full">
+        <label>Procedure(s) — select all that apply</label>
+        <div class="procedure-groups" id="procedureGroups"></div>
+        <div id="procedureError" class="field-error" style="display:none;">Select at least one procedure.</div>
+      </div>
+      <div class="field">
+        <label for="role">Role</label>
+        <select id="role">
+          <option value="">Select...</option>
+          <option>Primary Surgeon</option>
+          <option>First Assist</option>
+          <option>Second Assist</option>
+          <option>Observer</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="surgeon">Attending Surgeon Initials</label>
+        <input type="text" id="surgeon" placeholder="e.g. JD">
+      </div>
+      <div class="field">
+        <label for="exposure">Approach / Exposure</label>
+        <select id="exposure">
+          <option value="">Select...</option>
+          <option>Posterolateral Thoracotomy</option>
+          <option>Anterolateral Thoracotomy</option>
+          <option>Median Sternotomy</option>
+          <option>VATS (Video-Assisted Thoracoscopic Surgery)</option>
+          <option>Robotic-Assisted</option>
+          <option>Clamshell Incision</option>
+          <option>Other</option>
+        </select>
+        <input type="text" id="exposureOtherText" class="procedure-other-input" placeholder="Describe approach..." style="display:none;">
+      </div>
+      <div class="field">
+        <label for="cannulation">Ventilation Strategy</label>
+        <select id="cannulation">
+          <option value="">Select...</option>
+          <option>Double-Lumen Tube (Single-Lung Ventilation)</option>
+          <option>Bronchial Blocker</option>
+          <option>Standard Single-Lumen ETT</option>
+          <option>Jet Ventilation</option>
+          <option>Other</option>
+        </select>
+        <input type="text" id="cannulationOtherText" class="procedure-other-input" placeholder="Describe ventilation strategy..." style="display:none;">
+      </div>
+      <div class="field" id="valveTypeField">
+        <label for="valveType">Margin Status</label>
+        <select id="valveType">
+          <option value="">N/A</option>
+          <option>R0 - Negative</option>
+          <option>R1 - Microscopic Residual</option>
+          <option>R2 - Macroscopic Residual</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field" id="graftField">
+        <label for="grafts">Lymph Node Stations Sampled</label>
+        <input type="text" id="grafts" placeholder="e.g. 4R, 7, 10R, 11R">
+      </div>
+      <div class="field">
+        <label for="cardioplegia">Chest Tube Management</label>
+        <select id="cardioplegia">
+          <option value="">Select...</option>
+          <option>Single Chest Tube</option>
+          <option>Two Chest Tubes</option>
+          <option>Chest Tube + Blake Drain</option>
+          <option>No Chest Tube (VATS Wedge)</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="cpbTime">Operative Time (min)</label>
+        <input type="number" id="cpbTime" min="0" placeholder="e.g. 120">
+      </div>
+      <div class="field">
+        <label for="clampTime">One-Lung Ventilation Time (min)</label>
+        <input type="number" id="clampTime" min="0" placeholder="e.g. 75">
+      </div>
+      <div class="field">
+        <label for="arrestTime">Chest Tube Duration (days)</label>
+        <input type="number" id="arrestTime" min="0" placeholder="e.g. 3">
+      </div>
+      <div class="field">
+        <label for="bloodLoss">Estimated Blood Loss (mL)</label>
+        <input type="number" id="bloodLoss" min="0" placeholder="e.g. 300">
+      </div>
+      <div class="field">
+        <label for="temperature">Lowest Core Temperature (°C)</label>
+        <input type="number" id="temperature" min="0" step="0.1" placeholder="e.g. 35">
+      </div>
+      <div class="field">
+        <label for="outcome">Outcome</label>
+        <select id="outcome">
+          <option value="">Select...</option>
+          <option>Uneventful</option>
+          <option>Minor Complication</option>
+          <option>Major Complication</option>
+          <option>Reoperation Required</option>
+          <option>Mortality</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="Indication, complications, findings..."></textarea>
+      </div>
+      <div class="actions">
+        <button type="submit">Add Case</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Case History</h2>
+    <div class="filter-row">
+      <input type="text" id="search" placeholder="Search surgeon, notes...">
+      <select id="filterProcedure">
+        <option value="">All Procedures</option>
+      </select>
+      <button type="button" class="secondary" id="exportBtn">Export CSV</button>
+    </div>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Urgency</th>
+          <th>Diagnosis</th>
+          <th>Procedure</th>
+          <th>Role</th>
+          <th>Surgeon</th>
+          <th>Approach</th>
+          <th>Ventilation</th>
+          <th>Margin</th>
+          <th>Lymph Nodes</th>
+          <th>Chest Tube Mgmt</th>
+          <th>Op Time</th>
+          <th>OLV Time</th>
+          <th>CT Duration</th>
+          <th>Blood Loss</th>
+          <th>Temp</th>
+          <th>Outcome</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    </div>
+    <div class="empty" id="emptyMsg" style="display:none;">No cases logged yet.</div>
+  </div>
+
+  <div class="card">
+    <h2>Field Statistics</h2>
+    <div class="stat-blocks" id="statBlocks"></div>
+  </div>
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+<script src="auth.js"></script>
+<script>
+CaseLogAuth.protect(async function (authKey, displayName, accountKey) {
+  const form = document.getElementById('form');
+  const tableBody = document.getElementById('tableBody');
+  const emptyMsg = document.getElementById('emptyMsg');
+  const statsEl = document.getElementById('stats');
+  const searchInput = document.getElementById('search');
+  const filterProcedure = document.getElementById('filterProcedure');
+  const exportBtn = document.getElementById('exportBtn');
+
+  const storageKey = `thoracicCases_enc::${accountKey}`;
+  let cases = (await CaseLogAuth.decryptJSON(authKey, localStorage.getItem(storageKey))) || [];
+
+  const PROCEDURE_GROUPS = [
+    { category: 'Lung resection', valveRelated: true, items: [
+      'Wedge Resection', 'Segmentectomy', 'Lobectomy', 'Bilobectomy', 'Pneumonectomy'
+    ] },
+    { category: 'Airway surgery', valveRelated: false, items: [
+      'Bronchoplasty / Sleeve Resection', 'Tracheal Resection'
+    ] },
+    { category: 'Esophageal surgery', valveRelated: true, items: [
+      'Esophagectomy', 'Heller Myotomy', 'Anti-Reflux Surgery (Fundoplication)'
+    ] },
+    { category: 'Mediastinal surgery', valveRelated: true, items: [
+      'Mediastinal Mass Resection', 'Thymectomy'
+    ] },
+    { category: 'Pleural surgery', valveRelated: false, items: [
+      'Decortication', 'Pleurodesis', 'Pleural Biopsy'
+    ] },
+    { category: 'Chest wall surgery', valveRelated: true, items: [
+      'Chest Wall Resection', 'Chest Wall Reconstruction'
+    ] },
+    { category: 'Diaphragm surgery', valveRelated: false, items: null },
+    { category: 'Tracheostomy', valveRelated: false, items: null },
+  ];
+
+  const DIAGNOSIS_OPTIONS = [
+    'Lung Cancer (NSCLC)', 'Lung Cancer (SCLC)',
+    'Pulmonary Nodule (Indeterminate)',
+    'Esophageal Cancer',
+    'GERD / Hiatal Hernia',
+    'Achalasia',
+    'Mediastinal Mass / Tumor',
+    'Thymoma / Myasthenia Gravis',
+    'Pneumothorax',
+    'Pleural Effusion / Empyema',
+    'Chest Wall Tumor',
+  ];
+
+  const diagnosisSelectEl = document.getElementById('diagnosis');
+  const diagnosisOtherTextEl = document.getElementById('diagnosisOtherText');
+
+  function buildDiagnosisGroups() {
+    diagnosisSelectEl.innerHTML = '<option value="">Select...</option>' +
+      DIAGNOSIS_OPTIONS.map(item => `<option>${item}</option>`).join('') +
+      '<option value="Other">Other</option>';
+
+    diagnosisSelectEl.addEventListener('change', () => {
+      const isOther = diagnosisSelectEl.value === 'Other';
+      diagnosisOtherTextEl.style.display = isOther ? '' : 'none';
+      if (!isOther) diagnosisOtherTextEl.value = '';
+    });
+  }
+
+  function getSelectedDiagnosis() {
+    const value = diagnosisSelectEl.value;
+    if (value === 'Other') {
+      const text = diagnosisOtherTextEl.value.trim();
+      return text ? `Other: ${text}` : 'Other';
+    }
+    return value;
+  }
+
+  function resetDiagnosisGroups() {
+    diagnosisSelectEl.value = '';
+    diagnosisOtherTextEl.value = '';
+    diagnosisOtherTextEl.style.display = 'none';
+  }
+
+  const BOLD_CATEGORIES = ['Diaphragm surgery', 'Tracheostomy', 'Other'];
+
+  const procedureGroupsEl = document.getElementById('procedureGroups');
+  const procedureErrorEl = document.getElementById('procedureError');
+
+  function buildProcedureGroups() {
+    let html = '';
+    PROCEDURE_GROUPS.forEach(group => {
+      if (group.items) {
+        html += `
+          <div class="procedure-category" data-valve="${group.valveRelated}">
+            <div class="procedure-category-title">${group.category}</div>
+            <div class="procedure-options">
+              ${group.items.map(item => `
+                <label>
+                  <input type="checkbox" class="procedure-checkbox" value="${item}" data-valve="${group.valveRelated}" data-cabg="${item === 'Lobectomy' || item === 'Pneumonectomy' || item === 'Segmentectomy' || item === 'Bilobectomy' || item === 'Wedge Resection'}">
+                  ${item}
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        const boldClass = BOLD_CATEGORIES.includes(group.category) ? ' procedure-bold' : '';
+        html += `
+          <div class="procedure-category" data-valve="false">
+            <div class="procedure-options">
+              <label class="${boldClass.trim()}">
+                <input type="checkbox" class="procedure-checkbox" value="${group.category}" data-valve="false" data-cabg="false">
+                ${group.category}
+              </label>
+            </div>
+          </div>
+        `;
+      }
+    });
+    html += `
+      <div class="procedure-category" data-valve="false">
+        <div class="procedure-options">
+          <label class="procedure-bold">
+            <input type="checkbox" id="procedureOtherCheck" class="procedure-checkbox" value="Other" data-valve="false" data-cabg="false">
+            Other
+          </label>
+          <input type="text" id="procedureOtherText" class="procedure-other-input" placeholder="Describe procedure...">
+        </div>
+      </div>
+    `;
+    procedureGroupsEl.innerHTML = html;
+
+    procedureGroupsEl.querySelectorAll('.procedure-checkbox').forEach(cb => {
+      cb.addEventListener('change', updateConditionalFields);
+    });
+  }
+
+  function getSelectedProcedures() {
+    const boxes = [...procedureGroupsEl.querySelectorAll('.procedure-checkbox:checked')];
+    return boxes.map(cb => {
+      if (cb.value === 'Other') {
+        const text = document.getElementById('procedureOtherText').value.trim();
+        return text ? `Other: ${text}` : 'Other';
+      }
+      return cb.value;
+    });
+  }
+
+  function isAnySelectedValve() {
+    return [...procedureGroupsEl.querySelectorAll('.procedure-checkbox:checked')]
+      .some(cb => cb.dataset.valve === 'true');
+  }
+
+  function isCabgSelected() {
+    return [...procedureGroupsEl.querySelectorAll('.procedure-checkbox:checked')]
+      .some(cb => cb.dataset.cabg === 'true');
+  }
+
+  function resetProcedureGroups() {
+    procedureGroupsEl.querySelectorAll('.procedure-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('procedureOtherText').value = '';
+  }
+
+  async function save() {
+    localStorage.setItem(storageKey, await CaseLogAuth.encryptJSON(authKey, cases));
+  }
+
+  function outcomeBadgeColor(outcome) {
+    if (outcome === 'Uneventful') return '#e6f7ec;color:#1e7e42';
+    if (outcome === 'Minor Complication') return '#fff4e0;color:#a86a00';
+    if (outcome === 'Major Complication' || outcome === 'Reoperation Required') return '#fdeaea;color:#b3261e';
+    if (outcome === 'Mortality') return '#eee;color:#333';
+    return '#e7f3ec;color:#175a35';
+  }
+
+  function updateProcedureFilter() {
+    const procedures = [...new Set(cases.flatMap(c => c.procedures || []))].sort();
+    const current = filterProcedure.value;
+    filterProcedure.innerHTML = '<option value="">All Procedures</option>' +
+      procedures.map(p => `<option value="${p}">${p}</option>`).join('');
+    filterProcedure.value = current;
+  }
+
+  function categoryItems(categoryName) {
+    const group = PROCEDURE_GROUPS.find(g => g.category === categoryName);
+    return group && group.items ? group.items : [categoryName];
+  }
+
+  function countByCategory(categoryName) {
+    const items = categoryItems(categoryName);
+    return cases.filter(c => (c.procedures || []).some(p => items.includes(p))).length;
+  }
+
+  function updateStats() {
+    const total = cases.length;
+    const asPrimary = cases.filter(c => c.role === 'Primary Surgeon').length;
+    const asFirstAssist = cases.filter(c => c.role === 'First Assist').length;
+    const lung = countByCategory('Lung resection');
+    const esophageal = countByCategory('Esophageal surgery');
+    const mediastinal = countByCategory('Mediastinal surgery');
+
+    statsEl.innerHTML = `
+      <div class="stat"><div class="num">${total}</div><div class="label">Total Cases</div></div>
+      <div class="stat"><div class="num">${asPrimary}</div><div class="label">As Primary</div></div>
+      <div class="stat"><div class="num">${asFirstAssist}</div><div class="label">As First Assist</div></div>
+      <div class="stat"><div class="num">${lung}</div><div class="label">Lung Resection</div></div>
+      <div class="stat"><div class="num">${esophageal}</div><div class="label">Esophageal</div></div>
+      <div class="stat"><div class="num">${mediastinal}</div><div class="label">Mediastinal</div></div>
+    `;
+  }
+
+  const statBlocksEl = document.getElementById('statBlocks');
+
+  function normalizeLabel(value) {
+    return value && value.startsWith('Other:') ? 'Other' : value;
+  }
+
+  function tally(getValues) {
+    const counts = {};
+    cases.forEach(c => {
+      const raw = getValues(c);
+      const values = Array.isArray(raw) ? raw : [raw];
+      values.forEach(v => {
+        if (!v) return;
+        const label = normalizeLabel(v);
+        counts[label] = (counts[label] || 0) + 1;
+      });
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }
+
+  function renderDistributionBlock(title, entries) {
+    if (entries.length === 0) {
+      return `<div class="stat-block"><h3>${title}</h3><div class="stat-block-empty">No data yet.</div></div>`;
+    }
+    const max = Math.max(...entries.map(([, count]) => count));
+    const rows = entries.map(([label, count]) => `
+      <div class="dist-row">
+        <span class="dist-label">${label}</span>
+        <span class="dist-bar-wrap"><span class="dist-bar" style="width:${(count / max) * 100}%"></span></span>
+        <span class="dist-count">${count}</span>
+      </div>
+    `).join('');
+    return `<div class="stat-block"><h3>${title}</h3>${rows}</div>`;
+  }
+
+  function renderTimeBlock() {
+    const specs = [
+      { field: 'cpbTime', label: 'Operative Time', unit: 'min' },
+      { field: 'clampTime', label: 'One-Lung Ventilation Time', unit: 'min' },
+      { field: 'arrestTime', label: 'Chest Tube Duration', unit: 'days' },
+      { field: 'bloodLoss', label: 'Estimated Blood Loss', unit: 'mL' },
+      { field: 'temperature', label: 'Lowest Core Temperature', unit: '°C', decimals: 1 },
+    ];
+    const rows = specs.map(({ field, label, unit, decimals = 0 }) => {
+      const nums = cases
+        .map(c => c[field])
+        .filter(v => v !== '' && v !== null && v !== undefined)
+        .map(Number)
+        .filter(n => Number.isFinite(n));
+      if (nums.length === 0) {
+        return `<div class="time-stat-row">${label}: <span class="stat-block-empty">No data yet.</span></div>`;
+      }
+      const avg = (nums.reduce((s, n) => s + n, 0) / nums.length).toFixed(decimals);
+      const min = Math.min(...nums);
+      const max = Math.max(...nums);
+      return `<div class="time-stat-row">${label}: <strong>${avg} ${unit} avg</strong> (range ${min}–${max} ${unit}, n=${nums.length})</div>`;
+    }).join('');
+    return `<div class="stat-block"><h3>Times</h3>${rows}</div>`;
+  }
+
+  function buildFieldStats() {
+    const blocks = [
+      renderDistributionBlock('Urgency', tally(c => c.urgency)),
+      renderDistributionBlock('Diagnosis', tally(c => c.diagnosis)),
+      renderDistributionBlock('Procedures', tally(c => c.procedures || [])),
+      renderDistributionBlock('Role', tally(c => c.role)),
+      renderDistributionBlock('Approach / Exposure', tally(c => c.exposure)),
+      renderDistributionBlock('Ventilation Strategy', tally(c => c.cannulation)),
+      renderDistributionBlock('Margin Status', tally(c => c.valveType)),
+      renderDistributionBlock('Chest Tube Management', tally(c => c.cardioplegia)),
+      renderDistributionBlock('Outcome', tally(c => c.outcome)),
+      renderTimeBlock(),
+    ];
+    statBlocksEl.innerHTML = blocks.join('');
+  }
+
+  function render() {
+    const q = searchInput.value.trim().toLowerCase();
+    const procFilter = filterProcedure.value;
+
+    const filtered = cases
+      .map((c, i) => ({ ...c, _idx: i }))
+      .filter(c => {
+        if (procFilter && !(c.procedures || []).includes(procFilter)) return false;
+        if (!q) return true;
+        return [c.surgeon, c.notes, c.urgency, c.diagnosis, ...(c.procedures || []), c.exposure, c.cannulation, c.valveType, c.grafts, c.cardioplegia]
+          .join(' ').toLowerCase().includes(q);
+      })
+      .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    tableBody.innerHTML = '';
+    emptyMsg.style.display = filtered.length === 0 ? 'block' : 'none';
+
+    filtered.forEach(c => {
+      const tr = document.createElement('tr');
+      const style = outcomeBadgeColor(c.outcome);
+      tr.innerHTML = `
+        <td>${c.date || ''}</td>
+        <td>${c.urgency || '—'}</td>
+        <td>${c.diagnosis || '—'}</td>
+        <td>${(c.procedures || []).join(', ') || ''}</td>
+        <td>${c.role || '—'}</td>
+        <td>${c.surgeon || ''}</td>
+        <td>${c.exposure || '—'}</td>
+        <td>${c.cannulation || '—'}</td>
+        <td>${c.valveType || '—'}</td>
+        <td>${c.grafts || '—'}</td>
+        <td>${c.cardioplegia || '—'}</td>
+        <td>${c.cpbTime ? c.cpbTime + ' min' : '—'}</td>
+        <td>${c.clampTime ? c.clampTime + ' min' : '—'}</td>
+        <td>${c.arrestTime ? c.arrestTime + ' days' : '—'}</td>
+        <td>${c.bloodLoss ? c.bloodLoss + ' mL' : '—'}</td>
+        <td>${c.temperature ? c.temperature + ' °C' : '—'}</td>
+        <td>${c.outcome ? `<span class="badge" style="${style}">${c.outcome}</span>` : '—'}</td>
+        <td class="notes">${c.notes || ''}</td>
+        <td class="row-actions"><button data-idx="${c._idx}" class="delete">✕</button></td>
+      `;
+      tableBody.appendChild(tr);
+    });
+
+    tableBody.querySelectorAll('.delete').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        cases.splice(Number(btn.dataset.idx), 1);
+        await save();
+        updateProcedureFilter();
+        updateStats();
+        buildFieldStats();
+        render();
+      });
+    });
+  }
+
+  const valveTypeField = document.getElementById('valveTypeField');
+  const graftField = document.getElementById('graftField');
+
+  function updateConditionalFields() {
+    valveTypeField.style.display = isAnySelectedValve() ? '' : 'none';
+    graftField.style.display = isCabgSelected() ? '' : 'none';
+  }
+
+  const exposureSelectEl = document.getElementById('exposure');
+  const exposureOtherTextEl = document.getElementById('exposureOtherText');
+
+  exposureSelectEl.addEventListener('change', () => {
+    const isOther = exposureSelectEl.value === 'Other';
+    exposureOtherTextEl.style.display = isOther ? '' : 'none';
+    if (!isOther) exposureOtherTextEl.value = '';
+  });
+
+  function getSelectedExposure() {
+    const value = exposureSelectEl.value;
+    if (value === 'Other') {
+      const text = exposureOtherTextEl.value.trim();
+      return text ? `Other: ${text}` : 'Other';
+    }
+    return value;
+  }
+
+  function resetExposureField() {
+    exposureOtherTextEl.value = '';
+    exposureOtherTextEl.style.display = 'none';
+  }
+
+  const cannulationSelectEl = document.getElementById('cannulation');
+  const cannulationOtherTextEl = document.getElementById('cannulationOtherText');
+
+  cannulationSelectEl.addEventListener('change', () => {
+    const isOther = cannulationSelectEl.value === 'Other';
+    cannulationOtherTextEl.style.display = isOther ? '' : 'none';
+    if (!isOther) cannulationOtherTextEl.value = '';
+  });
+
+  function getSelectedCannulation() {
+    const value = cannulationSelectEl.value;
+    if (value === 'Other') {
+      const text = cannulationOtherTextEl.value.trim();
+      return text ? `Other: ${text}` : 'Other';
+    }
+    return value;
+  }
+
+  function resetCannulationField() {
+    cannulationOtherTextEl.value = '';
+    cannulationOtherTextEl.style.display = 'none';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const procedures = getSelectedProcedures();
+    if (procedures.length === 0) {
+      procedureErrorEl.style.display = 'block';
+      return;
+    }
+    procedureErrorEl.style.display = 'none';
+
+    cases.push({
+      date: document.getElementById('date').value,
+      urgency: document.getElementById('urgency').value,
+      diagnosis: getSelectedDiagnosis(),
+      procedures: procedures,
+      role: document.getElementById('role').value,
+      surgeon: document.getElementById('surgeon').value.trim(),
+      exposure: getSelectedExposure(),
+      cannulation: getSelectedCannulation(),
+      valveType: document.getElementById('valveType').value,
+      grafts: document.getElementById('grafts').value.trim(),
+      cardioplegia: document.getElementById('cardioplegia').value,
+      cpbTime: document.getElementById('cpbTime').value,
+      clampTime: document.getElementById('clampTime').value,
+      arrestTime: document.getElementById('arrestTime').value,
+      bloodLoss: document.getElementById('bloodLoss').value,
+      temperature: document.getElementById('temperature').value,
+      outcome: document.getElementById('outcome').value,
+      notes: document.getElementById('notes').value.trim(),
+    });
+    await save();
+    form.reset();
+    resetProcedureGroups();
+    resetDiagnosisGroups();
+    resetExposureField();
+    resetCannulationField();
+    document.getElementById('date').value = new Date().toISOString().slice(0, 10);
+    updateConditionalFields();
+    updateProcedureFilter();
+    updateStats();
+    buildFieldStats();
+    render();
+  });
+
+  searchInput.addEventListener('input', render);
+  filterProcedure.addEventListener('change', render);
+
+  exportBtn.addEventListener('click', () => {
+    const headers = ['Date', 'Urgency', 'Diagnosis', 'Procedure(s)', 'Role', 'Surgeon', 'Approach', 'Ventilation Strategy', 'Margin Status', 'Lymph Node Stations', 'Chest Tube Management', 'Operative Time (min)', 'One-Lung Ventilation Time (min)', 'Chest Tube Duration (days)', 'Estimated Blood Loss (mL)', 'Lowest Core Temperature (°C)', 'Outcome', 'Notes'];
+    const rows = cases.map(c => [c.date, c.urgency, c.diagnosis, (c.procedures || []).join('; '), c.role, c.surgeon, c.exposure, c.cannulation, c.valveType, c.grafts, c.cardioplegia, c.cpbTime, c.clampTime, c.arrestTime, c.bloodLoss, c.temperature, c.outcome, c.notes]);
+    const csv = [headers, ...rows]
+      .map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'thoracic_case_log.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  buildDiagnosisGroups();
+  buildProcedureGroups();
+  document.getElementById('date').value = new Date().toISOString().slice(0, 10);
+  updateConditionalFields();
+  updateProcedureFilter();
+  updateStats();
+  buildFieldStats();
+  render();
+});
+</script>
+</body>
+</html>
